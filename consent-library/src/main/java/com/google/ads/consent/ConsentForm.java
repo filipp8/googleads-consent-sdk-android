@@ -263,7 +263,7 @@ public class ConsentForm {
         webView.loadUrl(javascriptCommand);
     }
 
-    public void load() {
+    public void load() throws java.io.IOException {
         if (this.loadState == LoadState.LOADING) {
             listener.onConsentFormError("Cannot simultaneously load multiple consent forms.");
             return;
