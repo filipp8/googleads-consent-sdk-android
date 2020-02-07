@@ -42,8 +42,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.io.InputStream;
 import java.io.IOException;
-import android.content.res.AssetManager;
-import android.util.Log;
 
 /**
  * A Google rendered form for collecting consent from a user.
@@ -263,7 +261,7 @@ public class ConsentForm {
         webView.loadUrl(javascriptCommand);
     }
 
-    public void load() throws java.io.IOException {
+    public void load() {
         if (this.loadState == LoadState.LOADING) {
             listener.onConsentFormError("Cannot simultaneously load multiple consent forms.");
             return;
@@ -275,22 +273,18 @@ public class ConsentForm {
         }
 
         this.loadState = LoadState.LOADING;
-        Locale current = this.context.getResources().getConfiguration().locale;
 
-        AssetManager mg = this.context.getResources().getAssets();
-        InputStream is = null;
-        String url = "file:///android_asset/consentform_it.html";
+        String originalPath = "file:///android_asset/consentform.html";
+        String localizedPath = "file:///android_asset/consentform_" + Locale.getDefault().getLanguage() + ".html";
+        String localizedAssetPath = localizedPath.replace("file:///android_asset/", "");
+
         try {
-            is = mg.open("file:///android_asset/consentform_" + current.getLanguage() + ".html");
-            url = "file:///android_asset/consentform_" + current.getLanguage() + ".html";
-        } catch (IOException ex) {
-            url = "file:///android_asset/consentform_it.html";
-        } finally {
-            if (is != null) {
-                is.close();
-            }
+            InputStream stream = this.context.getResources().getAssets().open(localizedAssetPath);
+            stream.close();
+            this.webView.loadUrl(localizedPath);
+        } catch (IOException e) {
+            this.webView.loadUrl(originalPath);
         }
-        this.webView.loadUrl(url);
     }
 
     private void handleLoadComplete(String status) {
